@@ -1,15 +1,9 @@
 'use strict';
-/*
-1. make a filterByYear function
-
-*/
-
 (function() {
 
   let data = "no data";
   let allYearsData = "no data";
   let svgScatterPlot = ""; // keep SVG reference in global scope
-  let svgLineGraph = "";
 
   // load data and make scatter plot after window loads
   window.onload = function() {
@@ -27,13 +21,14 @@
       .then((csvData) => {
         data = csvData
         allYearsData = csvData;
-        makeScatterPlot(2014);
+        makeScatterPlot(2014); // initial scatter plot
       })
+      // start plotting subsequent years
       .then(() => {
         let timeExtent = d3.extent(allYearsData.map((row) => row["time"]));
         console.log(timeExtent);
         for (let i = timeExtent[0]; i <= timeExtent[1]; i++) {
-          setTimeout(() => {
+          setTimeout(() => { // plot the next year every second
             makeScatterPlot(i);
           }, (i - timeExtent[0]) * 1000);
         }
@@ -61,18 +56,6 @@
 
     // draw title and axes labels
     makeLabels();
-
-    /*
-    let timeExtent = d3.extent(allYearsData.map((row) => row["time"]));
-    console.log(timeExtent);
-    for (let i = timeExtent[0]; i <= timeExtent[1]; i++) {
-      setTimeout(() => {
-        console.log(i);
-        update(i, mapFunctions);
-      }, (i - timeExtent[0]) * 200);
-    }
-    */
-
   }
 
   function filterByYear(year) {
@@ -124,10 +107,13 @@
     .attr("class", "tooltip")
     .style("opacity", 0);
 
+    // reference to the start of our update
     let update = svgScatterPlot.selectAll('circle')
      .data(data);
 
-    update.exit().remove();
+    // update.exit() returns the elements we no longer need
+    // guess what remove does >:)
+    update.exit().remove(); // remove old elements
 
     // append data to SVG and plot as points
     update
@@ -145,106 +131,20 @@
           div.html(d.location + "<br/>" + numberWithCommas(d["pop_mlns"]*1000000))
             .style("left", (d3.event.pageX) + "px")
             .style("top", (d3.event.pageY - 28) + "px");
-          makeLineGraph(d["location"]);
+          //makeLineGraph(d["location"]);
         })
         .on("mouseout", (d) => {
           div.transition()
             .duration(500)
             .style("opacity", 0);
         });
-
+    
+    // animate the update
+    // note: new elements CANNOT be animated
     update.transition().duration(500)
       .attr('cx', xMap)
       .attr('cy', yMap)
       .attr('r',(d) => pop_map_func(d["pop_mlns"]));
-  }
-
-  function update(year, map) {
-    filterByYear(year);
-
-    // get population data as array
-    let pop_data = data.map((row) => +row["pop_mlns"]);
-    let pop_limits = d3.extent(pop_data);
-    // make size scaling function for population
-    let pop_map_func = d3.scaleLinear()
-      .domain([pop_limits[0], pop_limits[1]])
-      .range([3, 20]);
-
-    let xMap = map.x;
-    let yMap = map.y;
-
-    let update = svgScatterPlot.selectAll('circle').data(data);
-
-    update.enter().append('circle')
-      .attr('cx', xMap)
-      .attr('cy', yMap)
-      .attr('r',(d) => pop_map_func(d["pop_mlns"]))
-      .attr('fill', "#4286f4")
-      // add tooltip functionality to points
-      .on("mouseover", (d) => {
-        div.transition()
-          .duration(200)
-          .style("opacity", .9);
-        div.html(d.location + "<br/>" + numberWithCommas(d["pop_mlns"]*1000000))
-          .style("left", (d3.event.pageX) + "px")
-          .style("top", (d3.event.pageY - 28) + "px");
-        makeLineGraph(d["location"]);
-      })
-      .on("mouseout", (d) => {
-        div.transition()
-          .duration(500)
-          .style("opacity", 0);
-      });
-    update.exit().remove();
-
-    update.transition().duration(1000)
-      .attr('cx', xMap)
-      .attr('cy', yMap)
-      .attr('r',(d) => pop_map_func(d["pop_mlns"]));
-  }
-
-  function makeLineGraph(country) {
-    svgLineGraph.html("");
-    let countryData = allYearsData.filter((row) => row["location"] == country);
-    let timeData = countryData.map((row) => row["time"]);
-    let lifeExpectancyData = countryData.map((row) => row["life_expectancy"]);
-
-    let minMax = findMinMax(timeData, lifeExpectancyData);
-
-    let funcs = drawAxes(minMax, "time", "life_expectancy", svgLineGraph, {min: 50, max: 450}, {min: 50, max: 450});
-    plotLineGraph(funcs, countryData, country);
-  }
-
-  function plotLineGraph(funcs, countryData, country) {
-    let line = d3.line()
-      .x((d) => funcs.x(d))
-      .y((d) => funcs.y(d));
-    svgLineGraph.append('path')
-      .datum(countryData)
-      .attr("fill", "none")
-      .attr("stroke", "steelblue")
-      .attr("stroke-linejoin", "round")
-      .attr("stroke-linecap", "round")
-      .attr("stroke-width", 1.5)
-      .attr("d", line);
-
-    svgLineGraph.append('text')
-      .attr('x', 230)
-      .attr('y', 490)
-      .style('font-size', '10pt')
-      .text('Year');
-
-    svgLineGraph.append('text')
-      .attr('x', 230)
-      .attr('y', 30)
-      .style('font-size', '14pt')
-      .text(country);
-
-    svgLineGraph.append('text')
-      .attr('transform', 'translate(15, 300)rotate(-90)')
-      .style('font-size', '10pt')
-      .text('Life Expectancy (years)');
-
   }
 
   // draw the axes and ticks

@@ -12,10 +12,6 @@
       .attr('width', 500)
       .attr('height', 500);
 
-    svgLineGraph = d3.select("body")
-      .append('svg')
-      .attr('width', 500)
-      .attr('height', 500);
     // d3.csv is basically fetch but it can be be passed a csv file as a parameter
     d3.csv("./data/dataEveryYear.csv")
       .then((csvData) => {
@@ -107,15 +103,15 @@
     .attr("class", "tooltip")
     .style("opacity", 0);
 
+    /*******************************************************
+     * Enter, Update, Exit pattern
+     *******************************************************/
     // reference to the start of our update
+    // append new data to existing points
     let update = svgScatterPlot.selectAll('circle')
      .data(data);
 
-    // update.exit() returns the elements we no longer need
-    // guess what remove does >:)
-    update.exit().remove(); // remove old elements
-
-    // append data to SVG and plot as points
+    // add new circles
     update
       .enter()
       .append('circle')
@@ -138,6 +134,9 @@
             .duration(500)
             .style("opacity", 0);
         });
+
+    // update.exit() returns the elements we no longer need
+    update.exit().remove(); // remove old elements
     
     // animate the update
     // note: new elements CANNOT be animated
@@ -145,6 +144,10 @@
       .attr('cx', xMap)
       .attr('cy', yMap)
       .attr('r',(d) => pop_map_func(d["pop_mlns"]));
+    
+    /*******************************************
+     * Enter, Update, Exit end
+     ******************************************/
   }
 
   // draw the axes and ticks

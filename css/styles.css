@@ -1,4 +1,13 @@
-body { font: 12px Arial;}
+body { 
+    font: 12px Arial;
+    display: flex;
+    flex-direction: column;
+    flex-flow: column-reverse
+}
+
+button {
+    width: 5rem;
+}
 
 path {
     stroke-width: 2;

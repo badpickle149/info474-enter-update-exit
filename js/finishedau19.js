@@ -1,6 +1,5 @@
 'use strict';
 
-
 let data = "no data"
 let allYearsData = "no data"
 let svgScatterPlot = "" // keep SVG reference in global scope
@@ -16,7 +15,7 @@ const m = {
 svgScatterPlot = d3.select('body')
   .append('svg')
   .attr('width', m.width)
-  .attr('height', m.height);
+  .attr('height', m.height)
 
 // d3.csv is basically fetch but it can be be passed a csv file as a parameter
 d3.csv("./data/dataEveryYear.csv")
@@ -29,14 +28,14 @@ d3.csv("./data/dataEveryYear.csv")
 .then(() => {
     d3.select('#startTransition').on('click', function() {
         console.log('clicked')
-        let timeExtent = d3.extent(allYearsData.map((row) => row["time"]));
+        let timeExtent = d3.extent(allYearsData.map((row) => row["time"]))
         for (let i = timeExtent[0]; i <= timeExtent[1]; i++) {
         setTimeout(() => { // plot the next year every second
-            makeScatterPlot(i, funcs);
-        }, (i - timeExtent[0]) * 1000);
+            makeScatterPlot(i, funcs)
+        }, (i - timeExtent[0]) * 1000)
         }
     })
-});
+})
 
 function makeAxesAndLabels() {
     // get fertility_rate and life_expectancy arrays
@@ -44,38 +43,38 @@ function makeAxesAndLabels() {
     const lifeData = data.map((row) => parseFloat(row["life_expectancy"]))
 
     // find limits of data
-    const limits = findMinMax(fertilityData, lifeData);
+    const limits = findMinMax(fertilityData, lifeData)
 
     // draw axes and return scaling + mapping functions
     const funcs = drawAxes(limits, "fertility_rate", "life_expectancy", svgScatterPlot, 
-        {min: m.marginAll, max: m.width - m.marginAll}, {min: m.marginAll, max: m.height - m.marginAll});
+        {min: m.marginAll, max: m.width - m.marginAll}, {min: m.marginAll, max: m.height - m.marginAll})
 
     // draw title and axes labels
-    makeLabels();
+    makeLabels()
 
-    return funcs;
+    return funcs
 }
   
 
 // make scatter plot with trend line
 function makeScatterPlot(year, funcs) {
-  filterByYear(year);
+  filterByYear(year)
 
   // plot data as points and add tooltip functionality
-  plotData(funcs);
+  plotData(funcs)
 
   // plot new title
-  d3.select('#title').remove();
+  d3.select('#title').remove()
   svgScatterPlot.append('text')
     .attr('x', 50)
     .attr('y', 30)
     .attr('id', "title")
     .style('font-size', '14pt')
-    .text("Countries by Life Expectancy and Fertility Rate (" + data[0]["time"] + ")");
+    .text("Countries by Life Expectancy and Fertility Rate (" + data[0]["time"] + ")")
 }
 
 function filterByYear(year) {
-  data = allYearsData.filter((row) => row['time'] == year);
+  data = allYearsData.filter((row) => row['time'] == year)
 }
 
 // make title and axes labels
@@ -85,40 +84,40 @@ function makeLabels() {
     .attr('y', 30)
     .attr('id', "title")
     .style('font-size', '14pt')
-    .text("Countries by Life Expectancy and Fertility Rate (" + data[0]["time"] + ")");
+    .text("Countries by Life Expectancy and Fertility Rate (" + data[0]["time"] + ")")
 
   svgScatterPlot.append('text')
     .attr('x', 130)
     .attr('y', 490)
     .attr('id', "x-label")
     .style('font-size', '10pt')
-    .text('Fertility Rates (Avg Children per Woman)');
+    .text('Fertility Rates (Avg Children per Woman)')
 
   svgScatterPlot.append('text')
     .attr('transform', 'translate(15, 300)rotate(-90)')
     .style('font-size', '10pt')
-    .text('Life Expectancy (years)');
+    .text('Life Expectancy (years)')
 }
 
 // plot all the data points on the SVG
 // and add tooltip functionality
 function plotData(map) {
   // get population data as array
-  let pop_data = data.map((row) => +row["pop_mlns"]);
-  let pop_limits = d3.extent(pop_data);
+  let pop_data = data.map((row) => +row["pop_mlns"])
+  let pop_limits = d3.extent(pop_data)
   // make size scaling function for population
   let pop_map_func = d3.scaleLinear()
     .domain([pop_limits[0], pop_limits[1]])
-    .range([3, 20]);
+    .range([3, 20])
 
   // mapping functions
-  let xMap = map.x;
-  let yMap = map.y;
+  let xMap = map.x
+  let yMap = map.y
 
   // make tooltip
   let div = d3.select("body").append("div")
   .attr("class", "tooltip")
-  .style("opacity", 0);
+  .style("opacity", 0)
 
   /*******************************************************
    * Enter, Update, Exit pattern
@@ -126,7 +125,7 @@ function plotData(map) {
   // reference to the start of our update
   // append new data to existing points
   let update = svgScatterPlot.selectAll('circle')
-    .data(data);
+    .data(data)
 
   // add new circles
   update
@@ -140,26 +139,26 @@ function plotData(map) {
       .on("mouseover", (d) => {
         div.transition()
           .duration(200)
-          .style("opacity", .9);
+          .style("opacity", .9)
         div.html(d.location + "<br/>" + numberWithCommas(d["pop_mlns"]*1000000))
           .style("left", (d3.event.pageX) + "px")
-          .style("top", (d3.event.pageY - 28) + "px");
+          .style("top", (d3.event.pageY - 28) + "px")
       })
       .on("mouseout", (d) => {
         div.transition()
           .duration(500)
-          .style("opacity", 0);
-      });
+          .style("opacity", 0)
+      })
 
   // update.exit() returns the elements we no longer need
-  update.exit().remove(); // remove old elements
+  update.exit().remove() // remove old elements
   
   // animate the update
   // note: new elements CANNOT be animated
   update.transition().duration(500)
     .attr('cx', xMap)
     .attr('cy', yMap)
-    .attr('r',(d) => pop_map_func(d["pop_mlns"]));
+    .attr('r',(d) => pop_map_func(d["pop_mlns"]))
   
   /*******************************************
    * Enter, Update, Exit end
@@ -167,24 +166,29 @@ function plotData(map) {
 }
 
 // draw the axes and ticks
+// x -> the name of the field on the x axis
+// y -> the name of the field on the y axis
+// svg -> the svgContainer to draw on
+// rangeX -> and object of the form {min: yourXMinimum, max: yourXMaximum}
+// rangeY -> and object of the form {min: yourYMinimum, max: yourYMaximum}
 function drawAxes(limits, x, y, svg, rangeX, rangeY) {
   // return x value from a row of data
-  let xValue = function(d) { return +d[x]; }
+  let xValue = function(d) { return +d[x] }
 
   // function to scale x value
   let xScale = d3.scaleLinear()
     .domain([limits.xMin, limits.xMax]) // give domain buffer room
-    .range([rangeX.min, rangeX.max]);
+    .range([rangeX.min, rangeX.max])
 
   // xMap returns a scaled x value from a row of data
-  let xMap = function(d) { return xScale(xValue(d)); };
+  let xMap = function(d) { return xScale(xValue(d)) }
 
   // plot x-axis at bottom of SVG
-  let xAxis = d3.axisBottom().scale(xScale);
+  let xAxis = d3.axisBottom().scale(xScale)
   svg.append("g")
     .attr('transform', 'translate(0, ' + rangeY.max + ')')
     .attr('id', "x-axis")
-    .call(xAxis);
+    .call(xAxis)
 
   // return y value from a row of data
   let yValue = function(d) { return +d[y]}
@@ -192,17 +196,17 @@ function drawAxes(limits, x, y, svg, rangeX, rangeY) {
   // function to scale y
   let yScale = d3.scaleLinear()
     .domain([limits.yMax, limits.yMin]) // give domain buffer
-    .range([rangeY.min, rangeY.max]);
+    .range([rangeY.min, rangeY.max])
 
   // yMap returns a scaled y value from a row of data
-  let yMap = function (d) { return yScale(yValue(d)); };
+  let yMap = function (d) { return yScale(yValue(d)) }
 
   // plot y-axis at the left of SVG
-  let yAxis = d3.axisLeft().scale(yScale);
+  let yAxis = d3.axisLeft().scale(yScale)
   svg.append('g')
     .attr('transform', 'translate(' + rangeX.min + ', 0)')
     .attr('id', "y-axis")
-    .call(yAxis);
+    .call(yAxis)
 
   // return mapping and scaling functions
   return {
@@ -210,19 +214,19 @@ function drawAxes(limits, x, y, svg, rangeX, rangeY) {
     y: yMap,
     xScale: xScale,
     yScale: yScale
-  };
+  }
 }
 
 // find min and max for arrays of x and y
 function findMinMax(x, y) {
 
   // get min/max x values
-  let xMin = d3.min(x);
-  let xMax = d3.max(x);
+  let xMin = d3.min(x)
+  let xMax = d3.max(x)
 
   // get min/max y values
-  let yMin = d3.min(y);
-  let yMax = d3.max(y);
+  let yMin = d3.min(y)
+  let yMax = d3.max(y)
 
   // return formatted min/max data as an object
   return {
@@ -235,5 +239,5 @@ function findMinMax(x, y) {
 
 // format numbers
 function numberWithCommas(x) {
-  return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
 }

@@ -1,6 +1,10 @@
 /**
  * example of how to "chain" multiple transitions
  * using a for loop and setTimeout
+ * 
+ * note: this file uses the dataEveryYear.csv file which
+ * does not have "NA" values but also does not include as much
+ * data as the gapminder.csv file
  */
 
 // measurements for our plot

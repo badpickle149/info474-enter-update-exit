@@ -5,6 +5,10 @@
  * (might be because the data itself is not changing much during that period of time)
  * please let me know if you can solve these problems!
  * 
+ * note: this file uses the dataEveryYear.csv file which
+ * does not have "NA" values but also does not include as much
+ * data as the gapminder.csv file
+ * 
  * Another d3.active example (from the creator of d3):
  * https://bl.ocks.org/mbostock/1125997
  * 
